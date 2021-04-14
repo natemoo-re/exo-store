@@ -92,7 +92,7 @@ export default defineComponent({
 There's more info about this one in the [`subsribe` section](#Subscribe)! 🙃
 
 ```js
-import { $ } from '@astro/core';
+import { $ } from '@exo-store/core';
 import store from '../store';
 const { subscribe } = store[$];
 
