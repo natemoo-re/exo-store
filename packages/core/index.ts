@@ -7,6 +7,10 @@ interface OnChange<T extends Record<any, any>> {
   (state: T, change?: StoreChange): any;
 }
 
+type Fn<T> = T extends (...args: any) => infer U ? U : T;
+type Await<T> = T extends PromiseLike<infer U> ? U : T;
+type Unwrap<T> = Await<Fn<T>>;
+
 const ProxyPath = Symbol('ProxyPath');
 function createPathProxy(path: PropertyKey[] = []): any {
   const proxy = new Proxy(
@@ -169,13 +173,21 @@ function subscribe<
 
 // === PUBLIC API ===
 
-export type Store<T extends Record<any, any>> = T & StoreMarker<T>;
+export type Store<T extends Record<any, any>> = Unwrap<T> & StoreMarker<Unwrap<T>>;
 
 export const freeze = (store: Store<any>) =>
   Object.freeze(JSON.parse(JSON.stringify(store)));
 
+export function createStore<Setup extends (...args: any) => any, T extends ReturnType<Setup>>(
+  setup: Setup,
+  fallback?: Await<T>
+): Store<Await<T>>;
 export function createStore<T extends Record<any, any>>(
-  initialValue: T = {} as Record<any, any>,
+  initialValue: T
+): Store<T>;
+export function createStore<T extends Record<any, any>>(
+  initialValueOrSetup: T = {} as Record<any, any>,
+  fallback?: T
 ): Store<T> {
   let value: T;
   const fns = new Set<OnChange<T>>();
@@ -185,7 +197,6 @@ export function createStore<T extends Record<any, any>>(
       fn.apply(null, [value, ctx]);
     }
   };
-  value = createProxy(initialValue, emit) as T;
 
   const _subscribe = (fn: OnChange<T>) => {
     fns.add(fn);
@@ -199,19 +210,45 @@ export function createStore<T extends Record<any, any>>(
     compute: (i: any) => i,
   };
 
-  Object.defineProperty(value, $subscribe, {
-    writable: false,
-    value: _subscribe,
-  });
+  const intitialize = (initialValue: T) => {
+    value = createProxy(initialValue, emit) as T;
 
-  Object.defineProperty(value, $computed, {
-    writable: false,
-    value: new Map(),
-  });
+    Object.defineProperty(value, $subscribe, {
+      writable: false,
+      value: _subscribe,
+    });
 
-  Object.defineProperty(value, $, {
-    value: handlers,
-  });
+    Object.defineProperty(value, $computed, {
+      writable: false,
+      value: new Map(),
+    });
 
-  return value as Store<T>;
+    Object.defineProperty(value, $, {
+      value: handlers,
+    });
+
+    return value as Store<T>;
+  }
+
+  if (typeof initialValueOrSetup !== 'function') {
+    return intitialize(initialValueOrSetup);
+  }
+
+  const initialValueOrPromise = (initialValueOrSetup as any)();
+  if (typeof initialValueOrPromise.then === 'undefined') {
+    return intitialize(initialValueOrPromise as T);
+  }
+
+  if (typeof fallback === 'undefined') {
+    throw new Error(`Please provide an initial fallback value to "createStore" when using an async setup function`)
+  }
+
+  const store = intitialize(fallback!);
+  initialValueOrPromise.then((initialValue: T) => {
+    for (const [key, value] of Object.entries(initialValue)) {
+      store[key as keyof T] = value;
+    }
+  })
+
+  return store;
 }
