@@ -1,3 +1,5 @@
+import { dset } from 'dset';
+
 interface StoreChange {
   path: string;
   oldValue?: any;
@@ -7,9 +9,7 @@ interface OnChange<T extends Record<any, any>> {
   (state: T, change?: StoreChange): any;
 }
 
-type Fn<T> = T extends (...args: any) => infer U ? U : T;
 type Await<T> = T extends PromiseLike<infer U> ? U : T;
-type Unwrap<T> = Await<Fn<T>>;
 
 const ProxyPath = Symbol('ProxyPath');
 function createPathProxy(path: PropertyKey[] = []): any {
@@ -33,11 +33,19 @@ function createPathProxy(path: PropertyKey[] = []): any {
   return proxy;
 }
 
-function getPath(proxy: any) {
+/** @internal */
+export function _getPath(proxy: any) {
   if (typeof proxy === 'function') {
     proxy = proxy(createPathProxy());
   }
   return (proxy as any)[ProxyPath];
+}
+
+export const set = <T extends string|number|boolean>(target: T, value: T|((currentValue:T) => T)) => {
+  if (target == null) throw new Error(`Unable to set value of "${target}"`);
+  if (target && !(target as any)[$set]) throw new Error('Unable to set variables which were not created with createStore()')
+
+  return (target as any)[$set](value);
 }
 
 const createProxy = <
@@ -65,8 +73,9 @@ const createProxy = <
         return [...path, prop].join('.');
       }
       let _value = Reflect.get(target, prop, receiver);
-      if (typeof _value === 'function' && prop !== $subscribe) {
-        return _value(root ? root : value);
+      if (typeof _value === 'function') {
+        if (_value[$computed]) return _value(root ? root : value);
+        return _value;
       }
       if (typeof _value === 'object') {
         return createProxy(_value, cb, {
@@ -74,7 +83,24 @@ const createProxy = <
           root: root ? root : value,
         });
       }
-      return _value;
+
+      if (_value == null) return _value;
+
+      if (_value[$set]) return _value;
+
+      return Object.assign(_value, {
+        [$set]: (newValue: any) => {
+          const oldValue = _value;
+          if (typeof newValue === 'function') newValue = newValue(oldValue);
+          if (newValue === oldValue) return;
+          Reflect.set(target, prop, newValue);
+          cb({
+            path: [...path, `${prop as string}`].join('.'),
+            oldValue,
+            newValue,
+          });
+        }
+      });
     },
     set: (target, prop, value, receiver) => {
       const oldValue = Reflect.get(target, prop, receiver);
@@ -92,10 +118,26 @@ const createProxy = <
   return new Proxy(value, handler);
 };
 
+const createReadyPromise = () => {
+  const cbs = new Set<() => void>();
+  return {
+    subscribe: (cb: () => void) => {
+      cbs.add(cb);
+    },
+    resolve: () => {
+      for (const cb of cbs.values()) {
+        cb();
+        cbs.delete(cb);
+      }
+    }
+  }
+}
+
 /** @internal */
 export const $ = Symbol('$');
 const $subscribe = Symbol('subscribe');
 const $computed = Symbol('computed');
+const $set = Symbol('set');
 
 type Selector<T extends Record<any, any>> = (store: T) => any;
 type Subscribe<T extends Record<any, any>> = {
@@ -115,6 +157,7 @@ type Subscribe<T extends Record<any, any>> = {
 /** @internal */
 export type StoreMarker<T extends Record<any, any>> = {
   [$]: {
+    ready: () => Promise<void>;
     subscribe: Subscribe<T>;
     compute: (fn: (store: T) => any) => ReturnType<typeof fn>;
   };
@@ -162,7 +205,7 @@ function subscribe<
   }
   if (typeof onChangeOrDescriptor === 'object') {
     const { select, onChange } = onChangeOrDescriptor;
-    const path = getPath(select(createPathProxy())).join('.');
+    const path = _getPath(select).join('.');
     return (store as any)[$subscribe]((_state: T, ctx: StoreChange) => {
       if (ctx?.path?.indexOf(path) !== 0) return;
       onChange!(select(_state), ctx);
@@ -172,11 +215,8 @@ function subscribe<
 }
 
 // === PUBLIC API ===
-
-export type Store<T extends Record<any, any>> = Unwrap<T> & StoreMarker<Unwrap<T>>;
-
-export const freeze = (store: Store<any>) =>
-  Object.freeze(JSON.parse(JSON.stringify(store)));
+export type Wrap<T> = T extends Record<any, any> ? T : { value: T };
+export type Store<T extends Record<any, any>> = T & StoreMarker<T>;
 
 export function createStore<Setup extends (...args: any) => any, T extends ReturnType<Setup>>(
   setup: Setup,
@@ -184,11 +224,11 @@ export function createStore<Setup extends (...args: any) => any, T extends Retur
 ): Store<Await<T>>;
 export function createStore<T extends Record<any, any>>(
   initialValue: T
-): Store<T>;
+): T;
 export function createStore<T extends Record<any, any>>(
   initialValueOrSetup: T = {} as Record<any, any>,
   fallback?: T
-): Store<T> {
+): T {
   let value: T;
   const fns = new Set<OnChange<T>>();
 
@@ -205,9 +245,16 @@ export function createStore<T extends Record<any, any>>(
     };
   };
 
-  const handlers = {
-    subscribe: (arg: any) => subscribe(value as any, arg),
-    compute: (i: any) => i,
+  let isReady: ReturnType<typeof createReadyPromise>;
+  const handlers = () => {
+    isReady = createReadyPromise();
+    return {
+      subscribe: (arg: any) => subscribe(value as any, arg),
+      compute: (i: any) => {
+        return Object.assign(i, { [$computed]: true })
+      },
+      ready: () => new Promise<void>(resolve => isReady.subscribe(resolve))
+    }
   };
 
   const intitialize = (initialValue: T) => {
@@ -224,19 +271,23 @@ export function createStore<T extends Record<any, any>>(
     });
 
     Object.defineProperty(value, $, {
-      value: handlers,
+      value: handlers(),
     });
 
     return value as Store<T>;
   }
 
   if (typeof initialValueOrSetup !== 'function') {
-    return intitialize(initialValueOrSetup);
+    const value = intitialize(initialValueOrSetup);
+    isReady!.resolve();
+    return value;
   }
 
   const initialValueOrPromise = (initialValueOrSetup as any)();
   if (typeof initialValueOrPromise.then === 'undefined') {
-    return intitialize(initialValueOrPromise as T);
+    const value = intitialize(initialValueOrPromise as T);
+    isReady!.resolve();
+    return value;
   }
 
   if (typeof fallback === 'undefined') {
@@ -248,7 +299,7 @@ export function createStore<T extends Record<any, any>>(
     for (const [key, value] of Object.entries(initialValue)) {
       store[key as keyof T] = value;
     }
-  })
-
+  }).then(isReady!.resolve);
+  
   return store;
 }
