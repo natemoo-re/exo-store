@@ -1,5 +1,3 @@
-import { dset } from 'dset';
-
 interface StoreChange {
   path: string;
   oldValue?: any;
