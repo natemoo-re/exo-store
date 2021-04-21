@@ -41,14 +41,14 @@ import Store from '../store';
 
 const Component = () => {
   // read from `state`, mutate `store`
-  const [state, store] = useStore(Store);
+  const store = useStore(Store);
   const subtract = () => store.count--;
   const add = () => store.count++;
 
   return (
     <div>
       <button onClick={subtract}>-</button>
-      <div>{state.count}</div>
+      <div>{store.count}</div>
       <button onClick={add}>+</button>
     </div>
   );
@@ -61,7 +61,7 @@ const Component = () => {
 <template>
   <div>
     <button @click="subtract">-</button>
-    <div>{{ state.count }}</div>
+    <div>{{ store.count }}</div>
     <button @click="add">+</button>
   </div>
 </template>
@@ -73,12 +73,12 @@ import Store from '../store';
 
 export default defineComponent({
   setup() {
-    const [state, store] = useStore(Store);
+    const store = useStore(Store);
     const subtract = () => store.count--;
     const add = () => store.count++;
 
     return {
-      state,
+      store,
       add,
       subtract,
     };
@@ -101,8 +101,8 @@ const add = () => store.count++;
 
 document.querySelector('button#add').addEventListener('click', add);
 document.querySelector('button#subtract').addEventListener('click', subtract);
-subscribe((s) => {
-  document.querySelector('div#count').innerHTML = `${s.count}`;
+subscribe(() => {
+  document.querySelector('div#count').innerHTML = `${store.count}`;
 });
 ```
 
