@@ -1,7 +1,7 @@
 <h1 align="center">Exo Store</h1>
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/natemoo-re/exo-store/main/assets/planet.svg?sanitize=true"
+  <img src="https://raw.githubusercontent.com/natemoo-re/exo-store/main/assets/planet.svg?sanitize=true&v=1"
       alt="Planet" />
 </div>
 
