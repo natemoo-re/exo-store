@@ -1,9 +1,9 @@
-<h1 align="center">Exo Store</h1>
-
 <div align="center">
-  <img src="https://raw.githubusercontent.com/natemoo-re/exo-store/main/assets/planet.svg?sanitize=true&v=1"
+  <img height="256" src="https://raw.githubusercontent.com/natemoo-re/exo-store/main/assets/planet.svg?sanitize=true"
       alt="Planet" />
 </div>
+
+# Exo Store
 
 **I made [a bold claim](https://twitter.com/n_moore/status/1381999074702979073) and I regret it. 🤷**
 
