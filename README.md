@@ -1,4 +1,4 @@
-<h1 align="center">Exo</h1>
+<h1 align="center">Exo Store</h1>
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/natemoo-re/exo-store/main/assets/planet.svg?sanitize=true"
