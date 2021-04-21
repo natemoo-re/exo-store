@@ -1,5 +1,6 @@
 import { onUnmounted, ref, getCurrentInstance, isRef, Ref } from 'vue';
 import { $, Store, WithoutStoreMarker } from '@exo-store/core';
+export { set } from '@exo-store/core';
 
 const autoUnref = (value: Ref<any>) => {
   return new Proxy(value, {

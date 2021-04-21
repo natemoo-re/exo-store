@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
-import { $, freeze, Store, WithoutStoreMarker } from '@exo-store/core';
+import { $, Store, WithoutStoreMarker } from '@exo-store/core';
+export { set } from '@exo-store/core';
 
 export function useStore<T extends Store<any>>(
   store: T,
-): [Readonly<WithoutStoreMarker<T>>, WithoutStoreMarker<T>];
+): WithoutStoreMarker<T>;
 export function useStore<
   T extends Store<any>,
   Selector extends (value: WithoutStoreMarker<T>) => any
 >(
   store: T,
   selector: Selector,
-): [Readonly<ReturnType<Selector>>, WithoutStoreMarker<T>];
+): ReturnType<Selector>;
 export function useStore<
   T extends Store<any>,
   Selector extends (value: WithoutStoreMarker<T>) => any
@@ -19,7 +20,7 @@ export function useStore<
   const [_, forceUpdate] = useState({});
 
   const onChange = (v: typeof value) => {
-    value = freeze(v);
+    value = v;
     forceUpdate({});
   };
 
@@ -32,7 +33,7 @@ export function useStore<
     }
 
     return (store as Store<any>)[$].subscribe(onChange);
-  }, [store]);
+  }, []);
 
-  return [value, store];
+  return value;
 }

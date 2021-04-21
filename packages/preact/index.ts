@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
 import { $, Store, WithoutStoreMarker } from '@exo-store/core';
+export { set } from '@exo-store/core';
 
 export function useStore<T extends Store<any>>(
   store: T,
