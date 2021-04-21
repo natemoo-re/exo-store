@@ -9,7 +9,6 @@
   "dependencies": {
     "@exo-store/preact": "0.0.1",
     "@exo-store/vue": "0.0.1",
-    "@exo-store/worker": "0.0.1",
     "lit-element": "^2.4.0",
     "preact": "^10.5.13",
     "vue": "^3.0.11"

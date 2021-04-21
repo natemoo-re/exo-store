@@ -40,15 +40,14 @@ import { useStore } from '@exo-store/preact';
 import Store from '../store';
 
 const Component = () => {
-  // read from `state`, mutate `store`
-  const [state, store] = useStore(Store);
+  const store = useStore(Store);
   const subtract = () => store.count--;
   const add = () => store.count++;
 
   return (
     <div>
       <button onClick={subtract}>-</button>
-      <div>{state.count}</div>
+      <div>{store.count}</div>
       <button onClick={add}>+</button>
     </div>
   );
@@ -61,7 +60,7 @@ const Component = () => {
 <template>
   <div>
     <button @click="subtract">-</button>
-    <div>{{ state.count }}</div>
+    <div>{{ store.count }}</div>
     <button @click="add">+</button>
   </div>
 </template>
@@ -73,12 +72,12 @@ import Store from '../store';
 
 export default defineComponent({
   setup() {
-    const [state, store] = useStore(Store);
+    const store = useStore(Store);
     const subtract = () => store.count--;
     const add = () => store.count++;
 
     return {
-      state,
+      store,
       add,
       subtract,
     };
@@ -101,9 +100,42 @@ const add = () => store.count++;
 
 document.querySelector('button#add').addEventListener('click', add);
 document.querySelector('button#subtract').addEventListener('click', subtract);
-subscribe((s) => {
-  document.querySelector('div#count').innerHTML = `${s.count}`;
+subscribe(() => {
+  document.querySelector('div#count').innerHTML = `${store.count}`;
 });
+```
+
+## Reactivity
+
+Stores are fully reactive, even when destructuring or using a [selector](#selectors). However, because primitive (non-object) values in JavaScript are updated by assignment rather than reference, we must use a special `set` helper for primitives.
+
+```tsx
+import { useStore, set } from '@exo-store/preact';
+import Store from '../store';
+
+const Component = () => {
+  // Because we've selected just `count` (a number), assigning a new value
+  // won't update the store. We should use the `set` helper instead!
+  const count = useStore(Store, s => s.count);
+  const subtract = () => set(count, value => value -= 1);
+  const add = () => set(count, value => value += 1);
+
+  return (
+    <div>
+      <button onClick={subtract}>-</button>
+      <div>{count}</div>
+      <button onClick={add}>+</button>
+    </div>
+  );
+};
+```
+
+Here is the signature of `set`.
+
+```ts
+/** Update a primitive value (from a store) in a reactive manner */
+function set<T extends string|number|boolean>(value: T, newValue: T): void;
+function set<T extends string|number|boolean>(value: T, setter: (currentValue: T) => T): void;
 ```
 
 ## Utilities
