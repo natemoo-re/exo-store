@@ -1,6 +1,11 @@
-# Exo Store
+<h1 align="center">Exo</h1>
 
-## I made [a bold claim](https://twitter.com/n_moore/status/1381999074702979073) and I regret it. 🤷
+<div align="center">
+  <img src="https://raw.githubusercontent.com/natemoo-re/exo-store/main/assets/planet.svg?sanitize=true"
+      alt="Planet" />
+</div>
+
+**I made [a bold claim](https://twitter.com/n_moore/status/1381999074702979073) and I regret it. 🤷**
 
 Anyway this is an experimental (and unpublished) state management library.
 
