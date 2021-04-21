@@ -15,7 +15,7 @@ const store = createStore(async () => {
 }, initialState);
 const { compute } = store[$];
 
-store.total = compute((s) => s.preact + s.vue);
+store.total = compute((s) => s.preact + s.vue + s.deeply.nested.value);
 
 setInterval(() => {
   store.deeply.nested.value++;
