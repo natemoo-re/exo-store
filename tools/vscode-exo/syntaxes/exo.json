@@ -1,0 +1,78 @@
+{
+  "scopeName": "source.exo",
+  "patterns": [{ "include": "#expression" }],
+  "repository": {
+    "expression": {
+      "patterns": [{ "include": "#expr"}, { "include": "#keyword" }, { "include": "#string" }, { "include": "#numbers"}, { "include": "#comment"}, { "include": "#ident" }, {"include": "#operator"}, { "include": "#value" }, { "include": "#functions" }, { "include": "#paren-expression" }]
+    },
+    "comment": {
+			"begin": "(^[ \\t]+)?((\\#)(?:\\s*((@)internal)(?=\\s|$))?)",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.comment.leading.exo"
+				},
+				"2": {
+					"name": "comment.line.double-slash.exo"
+				},
+				"3": {
+					"name": "punctuation.definition.comment.exo"
+				},
+				"4": {
+					"name": "storage.type.internaldeclaration.exo"
+				},
+				"5": {
+					"name": "punctuation.decorator.internaldeclaration.exo"
+				}
+			},
+			"end": "(?=^)",
+      "name": "comment",
+			"contentName": "comment.line.double-slash.exo"
+		},
+    "string": {
+			"name": "string",
+			"begin": "\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.js"
+				}
+			},
+			"end": "(\")|((?:[^\\\\\\n])$)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.js"
+				},
+				"2": {
+					"name": "invalid.illegal.newline.js"
+				}
+			}
+		},
+    "numbers": {
+      "match": "FETCH|RESOLVE|REJECT|RETRY|enter|exit",
+      "name": "constant.numeric"
+    },
+    "keyword": {
+      "match": "state|machine",
+      "name": "storage.type.ts"
+    },
+    "ident": {
+      "match": "idle|fetch|loading|failure|success",
+      "name": "variable.other"
+    },
+    "functions": {
+      "match": "initial|final|main|on|after",
+      "name": "keyword"
+    },
+    "paren-expression": {
+      "begin": "\\(",
+      "end": "\\)",
+      "beginCaptures": {
+        "0": { "name": "punctuation.paren.open" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.paren.close" }
+      },
+      "name": "expression.group",
+      "patterns": [{ "include": "#expression" }]
+    }
+  }
+}

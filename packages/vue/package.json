@@ -4,12 +4,19 @@
   "version": "0.0.1",
   "main": "index.js",
   "exports": {
-    ".": "./index.js"
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "start": "exo dev index.ts",
+    "build": "exo build index.ts"
   },
   "dependencies": {
     "@exo-store/core": "0.0.1"
   },
   "peerDependencies": {
     "vue": "^3.0.11"
+  },
+  "devDependencies": {
+    "exo-scripts": "0.0.1"
   }
 }

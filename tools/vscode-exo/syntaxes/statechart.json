@@ -1,0 +1,23 @@
+{
+  "fileTypes": [],
+	"injectionSelector": "L:source.js -comment -(string -meta.embedded), L:source.jsx -comment -(string -meta.embedded),  L:source.js.jsx -comment -(string -meta.embedded), L:source.ts -comment -(string -meta.embedded), L:source.tsx -comment -(string -meta.embedded)",
+  "patterns": [
+    {
+      "contentName": "meta.embedded.block.exo",
+      "begin": "(?x)(\\b(?:\\w+\\.)*(statechart)\\s*)(`)",
+      "beginCapture": {
+        "2": "entity.name.function"
+      },
+      "end": "(`)",
+      "patterns": [
+        {
+          "include": "source.ts#template-substitution-element"
+        },
+        {
+          "include": "source.exo"
+        }
+      ]
+    }
+  ],
+  "scopeName": "inline.statechart"
+}

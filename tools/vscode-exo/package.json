@@ -1,0 +1,51 @@
+{
+  "name": "vscode-exo",
+  "version": "0.0.1",
+  "main": "./index.js",
+  "dependencies": {
+    "typescript-exo-plugin": "0.0.1"
+  },
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact"
+  ],
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "exo",
+        "aliases": [
+          "Exo"
+        ],
+        "configuration": "./exo.configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "exo",
+        "scopeName": "source.exo",
+        "path": "./syntaxes/exo.json"
+      },
+      {
+        "injectTo": [
+          "source.js",
+          "source.ts",
+          "source.jsx",
+          "source.js.jsx",
+          "source.tsx",
+          "source.vue",
+          "source.svelte"
+        ],
+        "scopeName": "inline.statechart",
+        "path": "./syntaxes/statechart.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.exo": "exo"
+        }
+      }
+    ]
+  }
+}

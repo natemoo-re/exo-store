@@ -4,20 +4,23 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "tools/*"
   ],
   "scripts": {
-    "start": "yarn workspace @example/kitchen-sink start",
+    "build": "npm run build --workspace=@exo-store/{core,preact,react,vue,machine}",
+    "start": "npm run start --workspace=@example/state-machine",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md,json}\""
   },
   "devDependencies": {
     "preact": "^10.5.13",
+    "prettier": "^2.0.5",
     "react": "^17.0.2",
-    "vue": "^3.0.11",
-    "prettier": "^2.0.5"
+    "vue": "^3.0.11"
   },
   "volta": {
     "node": "12.22.1",
-    "yarn": "1.22.10"
+    "yarn": "1.22.10",
+    "npm": "7.11.1"
   }
 }

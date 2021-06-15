@@ -2,8 +2,15 @@
   "name": "@exo-store/core",
   "type": "module",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "exports": {
-    ".": "./index.js"
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "start": "exo dev index.ts",
+    "build": "exo build index.ts"
+  },
+  "devDependencies": {
+    "exo-scripts": "0.0.1"
   }
 }

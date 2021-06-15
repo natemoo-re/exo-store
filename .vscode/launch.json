@@ -1,0 +1,17 @@
+{
+    "version": "0.1.0",
+    "configurations": [
+        {
+            "name": "Launch Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceRoot}/tools/vscode-exo"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/tools/vscode-exo/dist/**/*.js"
+            ]
+        }
+    ]
+}

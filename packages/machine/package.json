@@ -1,20 +1,18 @@
 {
-  "name": "@exo-store/preact",
+  "name": "@exo-store/machine",
   "type": "module",
   "version": "0.0.1",
   "main": "index.js",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./index.js"
   },
   "scripts": {
     "start": "exo dev index.ts",
-    "build": "exo build index.ts"
+    "build": "exo build index.ts",
+    "size": "exo size dist"
   },
   "dependencies": {
-    "@exo-store/core": "0.0.1"
-  },
-  "peerDependencies": {
-    "preact": "^10.5.13"
+    "fast-deep-equal": "^3.1.3"
   },
   "devDependencies": {
     "exo-scripts": "0.0.1"
